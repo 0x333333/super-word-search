@@ -116,7 +116,7 @@ function search() {
             end.x = x;
             end.y = y;
           } else {
-            // Else, set end'key as the start's key
+            // Else, set end'key as the start's key to discard current direction
             end.key = start.key;
             break;
           }
@@ -188,7 +188,7 @@ function main(callback) {
       }
     }
 
-    // Search
+    // Call search function
     callback();
   } catch(e) {
     process.stdout.write(RED + 'Input Error: Can not load input file' + CLEAR + '\n');
