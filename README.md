@@ -4,5 +4,5 @@ Super word search
 ## Test
 
 ```Shell
-node index.js test.txt
+node search test.txt
 ```
