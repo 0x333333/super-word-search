@@ -1,23 +1,13 @@
 #!/usr/bin/env node
 /*jshint node:true*/
 'use strict';
-
 var fs = require('fs');
 
-//////////////////// Configuration ////////////////////
+///////////////////////////////////////////////////////
+//                   Configuration                   //
+///////////////////////////////////////////////////////
 var RED    = '\x1B[31m', 
     CLEAR  = '\x1B[m';
-
-// Check command format
-if (process.argv.length !== 3) {
-  process.stdout.write(RED + 'Format Error: command is not complete' + CLEAR + '\n');
-  process.stdout.write(RED + 'Example: node search.js input.txt' + CLEAR + '\n');
-  return;
-}
-
-var pathToFile        = process.argv[2],
-    bufferString      = null,
-    bufferStringSplit = null;
 
 var N      = 0,
     M      = 0,
@@ -31,57 +21,31 @@ var N      = 0,
 var Directions = [[0,1], [1,1],  [1,0], [1,-1],
                   [0,-1],[-1,-1],[-1,0],[-1,1]];
 
-//////////////////// Read file ////////////////////
-function readFile(callback) {
-  fs.readFile(pathToFile, function (err, data) {
-    bufferString = data.toString(); 
-    bufferStringSplit = bufferString.split('\n'); 
-    callback(search);
-  });
+// Check command format
+if (process.argv.length !== 3) {
+  process.stdout.write(RED + 'Format Error: command is not complete' + CLEAR + '\n');
+  process.stdout.write(RED + 'Example: node search.js input.txt' + CLEAR + '\n');
+  return;
 }
 
-//////////////////// Analyse data ////////////////////
-function analyseFormat(callback) {
-  // console.log(bufferStringSplit);
-  try {
-    var size = bufferStringSplit[0].trim().split(' ');
-    N = parseInt(size[0]);
-    M = parseInt(size[1]);
+var pathToFile        = process.argv[2],
+    bufferString      = null,
+    bufferStringSplit = null;
 
-    var i = 0;
-    for (; i < N; i ++) {
-      Matrix.push(bufferStringSplit[i+1].trim().split(''));
-    }
 
-    Mode = bufferStringSplit[++i].trim();
+///////////////////////////////////////////////////////
+//                        Main                       //
+///////////////////////////////////////////////////////
+readFile(main);
 
-    P = parseInt(bufferStringSplit[++i].trim());
 
-    for (i++; i < (P+6); i ++) {
-      List.push(bufferStringSplit[i].trim());
-    }
+///////////////////////////////////////////////////////
+//                       Tools                       //
+///////////////////////////////////////////////////////
 
-    for (var n = 0; n < N; n ++) {
-      for (var m = 0; m < M; m++) {
-        Data[Matrix[n][m]] = {
-          x: n,
-          y: m,
-          direction: [true, true, true, true, true, true, true, true]
-        };
-      }
-    }
-
-    // console.log(N, M, Matrix, Mode, P, List, Data);
-    callback();
-
-  } catch(e) {
-    process.stdout.write(RED + 'Input Error: Can not load input file' + CLEAR + '\n');
-    console.error(e);
-  }
-}
 
 //////////////////// Check possible direction for each node ////////////////////
-var checkDirection = function(length) {
+function checkDirection(length) {
   Object.keys(Data).forEach(function(key) {
     if (M - Data[key].y < length) {
       Data[key].direction[0] = false;
@@ -104,11 +68,12 @@ var checkDirection = function(length) {
       Data[key].direction[7] = false;
     }
   });
-};
+}
 
 //////////////////// Check correctness by given path ////////////////////
-var search = function() {
+function search() {
   List.forEach(function(str) {
+    // Calculate all possible directions for each node, if mode is NO_WRAP
     if (Mode === 'NO_WRAP') { checkDirection(str.length); }
 
     var start = {
@@ -122,7 +87,7 @@ var search = function() {
       y: Data[str[0]].y
     };
 
-    // Get all possible directions for first point
+    // Get all possible directions for the first point
     var directions = Data[str[0]].direction;
     // Check each direction, goon determines if continue or not
     var goon = true;
@@ -134,8 +99,8 @@ var search = function() {
         for (var j = 1; j < str.length; j ++) {
 
           // Get next possible position
-          var x = end.x + Directions[i][0];
-          var y = end.y + Directions[i][1];
+          var x = end.x + Directions[i][0],
+              y = end.y + Directions[i][1];
 
           // If in WRAP mode, change boder position
           if (Mode === 'WRAP') {
@@ -171,9 +136,62 @@ var search = function() {
       console.log('(' + start.x + ',' + start.y + ')', '(' + end.x + ',' + end.y + ')');
     }
   });
-};
+}
 
+//////////////////// Read file ////////////////////
+function readFile(callback) {
+  fs.readFile(pathToFile, function (err, data) {
+    if (!err) {
+      bufferString = data.toString(); 
+      bufferStringSplit = bufferString.split('\n'); 
+      callback(search);
+    } else  { 
+      console.error(err); 
+    }
+  });
+}
 
-(function() {
-  readFile(analyseFormat);
-})();
+//////////////////// Analyse data ////////////////////
+function main(callback) {
+  // console.log(bufferStringSplit);
+  try {
+    // Get matrix size
+    var size = bufferStringSplit[0].trim().split(' ');
+    N = parseInt(size[0]);
+    M = parseInt(size[1]);
+
+    // Get matrix
+    var i = 0;
+    for (; i < N; i ++) {
+      Matrix.push(bufferStringSplit[i+1].trim().split(''));
+    }
+
+    // Get mode
+    Mode = bufferStringSplit[++i].trim();
+
+    // Get test case amount
+    P = parseInt(bufferStringSplit[++i].trim());
+
+    // Get all test cases
+    for (i++; i < (P+N+3); i ++) {
+      List.push(bufferStringSplit[i].trim());
+    }
+
+    // Construct node object
+    for (var n = 0; n < N; n ++) {
+      for (var m = 0; m < M; m++) {
+        Data[Matrix[n][m]] = {
+          x: n,
+          y: m,
+          direction: [true, true, true, true, true, true, true, true]
+        };
+      }
+    }
+
+    // Search
+    callback();
+  } catch(e) {
+    process.stdout.write(RED + 'Input Error: Can not load input file' + CLEAR + '\n');
+    console.error(e);
+  }
+}
