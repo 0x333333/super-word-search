@@ -9,7 +9,9 @@ Search word in a grid in 8 directions, [http://en.wikipedia.org/wiki/Word_search
 
 ## Run
 
-This solution is implemented with [Node.js](http://nodejs.org/download/).
+This solution is implemented with [Breadth-first search](http://en.wikipedia.org/wiki/Breadth-first_search) in [Node.js](http://nodejs.org/download/).
+
+To test the code, run this command in terminal:
 
 	node search test.txt
 
